@@ -1,7 +1,12 @@
 <!DOCTYPE html>
+<html>
 <title>Hello from Fly.io</title>
-{% if name %}
-    <h1>Hello, {{ name | capitalize }}!</h1>
-{% else %}
-    <h1>Hello, World!</h1>
-{% endif %}
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+<body>
+    {% if name %}
+        <h1>Hello, {{ name | capitalize }}!</h1>
+    {% else %}
+        <h1>Hello, World!</h1>
+    {% endif %}
+</body>
+</html>
