@@ -2,21 +2,39 @@ import requests
 import base64
 import os
 import json
+import datetime
+import logging
+import http
+from pprint import pformat
 from pytz import timezone
-from datetime import datetime
 from flask import Flask, request, redirect, Response
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv()
+#http.client.HTTPConnection.debuglevel = 1
 
-client = OpenAI()
+load_dotenv()
 
 app = Flask(__name__)
 
-@app.route('/task-from-image', methods=['POST'])
-def task_from_image():
-    encoded_image = request.form['image']
+mock_task = json.loads('{"title": "Plan Hot Air Balloon Trip", "dueDate": "2023-12-16T00:00:00-08:00", "content": "- [ ] Research local hot air balloon companies\\n- [ ] Compare pricing and reviews\\n - [ ] Check the weather forecast for this weekend\\n - [ ] Contact chosen company to book a flight\\n - [ ] Confirm booking and payment details\\n - [ ] Prepare camera equipment for aerial photos\\n - [ ] Notify participants of the trip details", "startDate": "2023-12-15T00:00:00-08:00", "timeZone": "America/Los_Angeles", "isAllDay": true}')
+
+def convert_image_to_task(encoded_image: str) -> dict:
+    """
+    Converts an encoded image into a task by sending to OpeNAI to analyzing 
+    the image, generating a summary of the image and generating a TickTick 
+    task in JSON format.
+
+    Args:
+        encoded_image (str): The base64-encoded image.
+
+    Returns:
+        dict: A TickTick task in JSON format.
+
+    Raises:
+        None
+    """
+    client = OpenAI()
 
     prompt_messages = [
         {
@@ -60,28 +78,57 @@ Do not include the string "\n```json" in your response.
     }
 
     completion = client.chat.completions.create(**params)
-    # print(completion.choices[0].message.content)
+    app.logger.debug(completion.choices[0].message.content)
 
     task = json.loads(completion.choices[0].message.content)
-    
-    now = datetime.now(timezone('America/Los_Angeles')).replace(hour=0, minute=0, second=0, microsecond=0)
+    return task
 
-    task['startDate'] = now.isoformat()
-    # task['dueDate'] = now.isoformat()
-    task['timezone'] = 'America/Los_Angeles'
-    # task['isAllDay'] = True
+def create_ticktick_task(task: dict):
+    """
+    Create a TickTick task using the provided task dictionary.
 
+    Args:
+        task (dict): A dictionary containing the details of the task.
+
+    Returns:
+        dict: A dictionary containing the response from the TickTick API.
+    """
+
+    ## get a datetime object that is today (Pacific) and at midnight
+    now = datetime.datetime.now(timezone('America/Los_Angeles'))
+    now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    ## set the attributes on the task that we don't want OpenAI to handle
+    task['startDate'] = now.strftime("%Y-%m-%dT%H:%M:%S+0000")
+    task['dueDate'] = now.strftime("%Y-%m-%dT%H:%M:%S+0000")
+    task['isAllDay'] = True
+    if 'priority' in task: del task['priority'] 
+
+    ## send the task to TickTick
     headers = {
         "Authorization": "Bearer " + os.environ.get('TICKTICK_ACCESS_TOKEN')
     }
 
-    response = requests.post("https://ticktick.com/open/v1/task", json=task, headers=headers)
+    app.logger.debug(f">>>>>> Task to TickTick:\r\n {pformat(task)}")
 
-    print(response.json())
+    response = requests.post("https://api.ticktick.com/open/v1/task", json=task, headers=headers)
 
-    return Response(response=completion.choices[0].message.content,
-                    status=200,
-                    mimetype="application/json")
+    app.logger.debug(f">>>>>> Task from TickTick:\r\n {pformat(response.json())}")
+
+    return response.json()
+
+@app.route('/task-from-image', methods=['POST'])
+def task_from_image():
+    
+    if 'image' not in request.form:
+        return "No image sent", 400
+
+    task = mock_task
+
+    if 'mock' not in request.form:
+        task = convert_image_to_task(request.form['image'])
+
+    return create_ticktick_task(task)
 
 if __name__ == '__main__':
     app.run()
