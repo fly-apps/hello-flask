@@ -180,7 +180,7 @@ def task_from_email():
     }
 
     for attachment in request.json['Attachments']:
-        encoded_images.append(processors[attachment['Content-Type']](attachment['Content']))
+        encoded_images.append(processors[attachment['ContentType']](attachment['Content']))
 
     if 'mock' not in request.json:
         task = convert_image_to_task(encoded_images, query_suffix=get_query_suffix(request.json['TextBody']))
