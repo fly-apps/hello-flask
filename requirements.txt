@@ -17,9 +17,12 @@ Pillow==10.1.0
 pydantic==2.5.2
 pydantic_core==2.14.5
 python-dotenv==1.0.0
+python-http-client==3.3.7
 pytz==2021.1
 regex==2021.4.4
 requests==2.26.0
+sendgrid==6.11.0
+starkbank-ecdsa==2.2.0
 ticktick-py==2.0.3
 tqdm==4.66.1
 tzlocal==5.2

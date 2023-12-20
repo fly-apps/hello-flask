@@ -1,13 +1,13 @@
-# fly.toml app configuration file generated for image-to-ticktick on 2023-12-15T22:03:40Z
+# fly.toml app configuration file generated for image-to-ticktick-morning-morning-9723 on 2023-12-19T22:55:32Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "image-to-ticktick"
+app = "image-to-ticktick-morning-morning-9723"
 primary_region = "lax"
 
 [build]
-  builder = "paketobuildpacks/builder:base"
+  dockerfile = "Dockerfile"
 
 [env]
   PORT = "8080"
