@@ -159,47 +159,6 @@ Here is the email content:
 {html}
 """
 
-# cloudmailin version
-# @app.route('/', methods=['POST'])
-# @app.route('/task-from-email-cloudmailin', methods=['POST'])
-# def task_from_email_cloudmailin():
-#     pprint(request.form['attachment1'])
-#     file_bytes = base64.b64decode(request.json['attachments'][0]['content'])
-#     images: List[Image.Image] = convert_from_bytes(file_bytes,fmt="JPEG")
-#     encoded_images = [get_image_in_jpeg64(im) for im in images]
-
-#     if 'mock' not in request.json:
-#         task = convert_image_to_task(encoded_images, query_suffix=get_query_suffix(request.json['html']))
-
-#     pprint(task)
-
-#     return create_ticktick_task(task)
-
-
-# sendgrid version
-# @app.route('/', methods=['POST'])
-# @app.route('/task-from-email', methods=['POST'])
-# def task_from_email_form():
-#     encoded_images = []
-
-#     pprint(request.files)
-    
-#     for attachment in request.files.values():
-#         attachment.save('static/test.pdf')
-#         attachment.seek(0)
-#         file_bytes = attachment.read()
-#         images: List[Image.Image] = convert_from_bytes(file_bytes,fmt="JPEG")
-#         encoded_images.append([get_image_in_jpeg64(im) for im in images])
-
-#     return "OK"
-
-#     print(len(encoded_images))
-
-#     if 'mock' not in request.form:
-#         task = convert_image_to_task(encoded_images, query_suffix=get_query_suffix(request.form['html']))
-
-#     return create_ticktick_task(task)
-
 @app.route('/', methods=['POST'])
 @app.route('/task-from-email-json', methods=['POST'])
 def task_from_email():
